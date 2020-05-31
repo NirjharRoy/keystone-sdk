@@ -7,7 +7,6 @@ set(SOURCE_FILES
         src/elf.c
         src/elf32.c
         src/elf64.c
-        src/sha3.c
         src/ELFFile.cpp
         src/KeystoneDevice.cpp
         src/Keystone.cpp
@@ -19,9 +18,9 @@ set(INCLUDE_DIRS include)
 set(CMAKE_C_FLAGS          "${CMAKE_C_FLAGS} ${CFLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 
-include_directories(${INCLUDE_DIRS})
+include_directories(${INCLUDE_DIRS} ${COMMON_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME} ${SOURCE_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${COMMON_SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${out_dir})
