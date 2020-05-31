@@ -44,8 +44,7 @@ class Keystone {
   bool initStack(vaddr_t start, size_t size, bool is_rt);
   KeystoneError loadUntrusted();
   KeystoneError loadELF(ELFFile* file);
-  KeystoneError validate_and_hash_enclave(
-      struct runtime_params_t args);
+  KeystoneError validate_and_hash_enclave(struct runtime_params_t args);
 
   bool initFiles(const char*, const char*);
   bool initDevice();
