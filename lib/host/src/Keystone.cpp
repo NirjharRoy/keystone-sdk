@@ -81,13 +81,11 @@ Keystone::initStack(vaddr_t start, size_t size, bool is_rt) {
   return true;
 }
 
-KeystoneError
-Keystone::loadELF(ELFFile* elf) {
-  static char nullpage[PAGE_SIZE] = {
-      0,
-  };
-  unsigned int mode = elf->getPageMode();
+bool
+Keystone::mapElf(ELFFile* elf) {
   vaddr_t va;
+
+  assert(elf);
 
   size_t num_pages =
       ROUND_DOWN(elf->getTotalMemorySize(), PAGE_BITS) / PAGE_SIZE;
@@ -95,9 +93,20 @@ Keystone::loadELF(ELFFile* elf) {
 
   if (pMemory->epm_alloc_vspace(va, num_pages) != num_pages) {
     ERROR("failed to allocate vspace\n");
-    return KeystoneError::VSpaceAllocationFailure;
+    return false;
   }
-  for (unsigned int i = 0; i < elf->getNumProgramHeaders(); i++) {
+
+  return true;
+}
+
+KeystoneError
+Keystone::loadElf(ELFFile* elf) {
+  static char nullpage[PAGE_SIZE] = {
+      0,
+  };
+
+  unsigned int mode = elf->getPageMode();
+    for (unsigned int i = 0; i < elf->getNumProgramHeaders(); i++) {
     if (elf->getProgramHeaderType(i) != PT_LOAD) {
       continue;
     }
@@ -106,7 +115,7 @@ Keystone::loadELF(ELFFile* elf) {
     vaddr_t file_end   = start + elf->getProgramHeaderFileSize(i);
     vaddr_t memory_end = start + elf->getProgramHeaderMemorySize(i);
     char* src          = reinterpret_cast<char*>(elf->getProgramSegment(i));
-    va                 = start;
+    vaddr_t va                 = start;
 
     /* FIXME: This is a temporary fix for loading iozone binary
      * which has a page-misaligned program header. */
@@ -285,17 +294,27 @@ Keystone::init(
     return KeystoneError::DeviceError;
   }
 
+  if (!mapElf(runtimeFile)) {
+    destroy();
+    return KeystoneError::VSpaceAllocationFailure;
+  }
+
   pMemory->startRuntimeMem();
 
-  if (loadELF(runtimeFile) != KeystoneError::Success) {
+  if (loadElf(runtimeFile) != KeystoneError::Success) {
     ERROR("failed to load runtime ELF");
     destroy();
     return KeystoneError::ELFLoadFailure;
   }
 
+  if (!mapElf(enclaveFile)) {
+    destroy();
+    return KeystoneError::VSpaceAllocationFailure;
+  }
+
   pMemory->startEappMem();
 
-  if (loadELF(enclaveFile) != KeystoneError::Success) {
+  if (loadElf(enclaveFile) != KeystoneError::Success) {
     ERROR("failed to load enclave ELF");
     destroy();
     return KeystoneError::ELFLoadFailure;
@@ -309,8 +328,6 @@ Keystone::init(
     return KeystoneError::PageAllocationFailure;
   }
 #endif /* USE_FREEMEM */
-
-  pMemory->startFreeMem();
 
   vaddr_t utm_free;
   utm_free = pMemory->allocUTM(params.getUntrustedSize());
@@ -339,6 +356,8 @@ Keystone::init(
   if (params.isSimulated()) {
     validate_and_hash_enclave(runtimeParams);
   }
+
+  pMemory->startFreeMem();
 
   if (pDevice->finalize(
           pMemory->getRuntimePhysAddr(), pMemory->getEappPhysAddr(),
