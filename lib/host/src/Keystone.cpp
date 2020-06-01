@@ -352,12 +352,12 @@ Keystone::init(
   runtimeParams.untrusted_size =
       reinterpret_cast<uintptr_t>(params.getUntrustedSize());
 
+  pMemory->startFreeMem();
+
   /* TODO: This should be invoked with some other function e.g., measure() */
   if (params.isSimulated()) {
     validate_and_hash_enclave(runtimeParams);
   }
-
-  pMemory->startFreeMem();
 
   if (pDevice->finalize(
           pMemory->getRuntimePhysAddr(), pMemory->getEappPhysAddr(),
