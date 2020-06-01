@@ -50,6 +50,7 @@ class MockKeystoneDevice : public KeystoneDevice {
  private:
   /* allocated buffer with map() */
   void* sharedBuffer;
+
  public:
   MockKeystoneDevice() {}
   ~MockKeystoneDevice();
