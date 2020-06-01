@@ -106,7 +106,7 @@ Keystone::loadElf(ELFFile* elf) {
   };
 
   unsigned int mode = elf->getPageMode();
-    for (unsigned int i = 0; i < elf->getNumProgramHeaders(); i++) {
+  for (unsigned int i = 0; i < elf->getNumProgramHeaders(); i++) {
     if (elf->getProgramHeaderType(i) != PT_LOAD) {
       continue;
     }
@@ -115,7 +115,7 @@ Keystone::loadElf(ELFFile* elf) {
     vaddr_t file_end   = start + elf->getProgramHeaderFileSize(i);
     vaddr_t memory_end = start + elf->getProgramHeaderMemorySize(i);
     char* src          = reinterpret_cast<char*>(elf->getProgramSegment(i));
-    vaddr_t va                 = start;
+    vaddr_t va         = start;
 
     /* FIXME: This is a temporary fix for loading iozone binary
      * which has a page-misaligned program header. */
