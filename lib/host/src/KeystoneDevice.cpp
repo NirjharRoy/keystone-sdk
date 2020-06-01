@@ -175,5 +175,10 @@ MockKeystoneDevice::initDevice(Params params) {
 
 void*
 MockKeystoneDevice::map(vaddr_t addr, size_t size) {
-  return nullptr;
+  return malloc(size);
+}
+
+MockKeystoneDevice::~MockKeystoneDevice() {
+  if (sharedBuffer)
+    free(sharedBuffer);
 }
