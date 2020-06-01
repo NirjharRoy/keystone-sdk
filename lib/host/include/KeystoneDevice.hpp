@@ -43,7 +43,7 @@ class KeystoneDevice {
   virtual KeystoneError destroy();
   virtual KeystoneError run();
   virtual KeystoneError resume();
-  void* map(vaddr_t addr, size_t size);
+  virtual void* map(vaddr_t addr, size_t size);
 };
 
 class MockKeystoneDevice : public KeystoneDevice {

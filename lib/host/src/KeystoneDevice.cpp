@@ -172,3 +172,8 @@ bool
 MockKeystoneDevice::initDevice(Params params) {
   return true;
 }
+
+void*
+MockKeystoneDevice::map(vaddr_t addr, size_t size) {
+  return nullptr;
+}
